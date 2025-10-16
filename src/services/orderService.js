@@ -1,6 +1,22 @@
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase.config";
 import emailjs from '@emailjs/browser';
+
+// Setup real-time listener for orders
+export const subscribeToOrders = (callback) => {
+  const ordersRef = collection(db, "orders");
+  const q = query(ordersRef, orderBy("timestamp", "desc")); // Sort by timestamp
+  
+  return onSnapshot(q, (snapshot) => {
+    const orders = [];
+    snapshot.forEach((doc) => {
+      orders.push({ id: doc.id, ...doc.data() });
+    });
+    callback(orders);
+  }, (error) => {
+    console.error("Error listening to orders:", error);
+  });
+};
 
 const EMAILJS_SERVICE = import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_p5j9ak4";
 const EMAILJS_TEMPLATE = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_g52eb3e";
@@ -13,6 +29,13 @@ const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "6B2jTwTug
 //   shipping, tax, total
 // }
 export const saveOrder = async (orderData) => {
+  console.log('Saving order:', orderData);
+  
+  // Add timestamp if not present
+  if (!orderData.timestamp) {
+    orderData.timestamp = new Date();
+  }
+  
   // If VITE_USE_SERVER_ORDER=true, post to serverless endpoint instead (safer for production)
   const useServer = import.meta.env.VITE_USE_SERVER_ORDER === 'true' || false;
   if (useServer) {
@@ -38,11 +61,19 @@ export const saveOrder = async (orderData) => {
     // Save order to Firestore directly from client
     let docRef;
     try {
-      docRef = await addDoc(collection(db, "orders"), {
+      // Validate connection to Firestore first
+      const ordersRef = collection(db, "orders");
+      if (!ordersRef) {
+        throw new Error("Failed to connect to Firestore database");
+      }
+      
+      docRef = await addDoc(ordersRef, {
         ...orderData,
         createdAt: new Date(),
         status: "pending"
       });
+      
+      console.log("Order saved successfully with ID:", docRef.id);
     } catch (fsErr) {
       console.error('Firestore save error:', fsErr);
       throw new Error('firestore:' + (fsErr.message || fsErr));

@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -20,17 +20,33 @@ const firebaseConfig = {
 // Initialize Firebase app
 const app = initializeApp(firebaseConfig);
 
-// Only initialize analytics when running in the browser (avoid errors during build/SSR)
+// Initialize Firestore
+const db = getFirestore(app);
+
+// Enable offline persistence
+if (typeof window !== 'undefined') {
+    enableIndexedDbPersistence(db, {
+        synchronizeTabs: true
+    }).catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.warn('Firebase persistence failed - multiple tabs open');
+        } else if (err.code === 'unimplemented') {
+            console.warn('Firebase persistence not supported by browser');
+        }
+    });
+}
+
 let analyticsInstance = null;
+
 try {
   if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
     analyticsInstance = getAnalytics(app);
   }
 } catch (err) {
   // Non-fatal: analytics may not be available during build or in some runtimes
-  // Log at debug level for troubleshooting but don't throw.
-  // console.debug('Analytics not initialized:', err);
+  console.debug('Analytics not initialized:', err);
 }
 
+// Export instances
 export const analytics = analyticsInstance;
-export const db = getFirestore(app);
+export { db };
