@@ -169,13 +169,47 @@ export default function NordaStarMaps() {
   const ContactPage = () => {
     const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '', product: '' });
     
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+      console.log('DEBUG: handleSubmit called', formData);
+      // quick debug alert so the user sees the handler ran
+      // Remove these lines after debugging
+      try { window.alert('DEBUG: handler called'); } catch(e) {}
+
       if (!formData.name || !formData.email || !formData.phone || !formData.product) {
         alert('Te rog completează toate câmpurile obligatorii!');
         return;
       }
-      alert('Mulțumim pentru comandă! Vă vom contacta în curând pe WhatsApp sau email.');
-      setFormData({ name: '', email: '', phone: '', message: '', product: '' });
+
+      // Build minimal order data expected by saveOrder
+      const orderPayload = {
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        items: [
+          {
+            name: formData.product,
+            units: 1,
+            price: 0,
+            image_url: ''
+          }
+        ],
+        shipping: 0,
+        tax: 0,
+        total: 0,
+        message: formData.message
+      };
+
+      try {
+        // dynamic import so the code doesn't require EmailJS during static analysis if not configured
+        const { saveOrder } = await import('./services/orderService');
+        const orderId = await saveOrder(orderPayload);
+        alert('Mulțumim pentru comandă! ID comandă: ' + orderId + '. Veți primi un email de confirmare.');
+        setFormData({ name: '', email: '', phone: '', message: '', product: '' });
+      } catch (err) {
+        console.error('Order submit error:', err);
+        const msg = err?.message || String(err);
+        alert('A apărut o eroare la trimiterea comenzii: ' + msg + '\n\nVerifică consola pentru detalii.');
+      }
     };
 
     return (
