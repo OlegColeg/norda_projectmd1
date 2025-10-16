@@ -3,8 +3,8 @@ import { db } from "../firebase.config";
 import emailjs from '@emailjs/browser';
 
 const EMAILJS_SERVICE = import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_p5j9ak4";
-const EMAILJS_TEMPLATE = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "YOUR_TEMPLATE_ID";
-const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "YOUR_PUBLIC_KEY";
+const EMAILJS_TEMPLATE = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_g52eb3e";
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "6B2jTwTuges4knKMw";
 
 // orderData shape (recommended):
 // {
@@ -13,8 +13,29 @@ const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "YOUR_PUBL
 //   shipping, tax, total
 // }
 export const saveOrder = async (orderData) => {
+  // If VITE_USE_SERVER_ORDER=true, post to serverless endpoint instead (safer for production)
+  const useServer = import.meta.env.VITE_USE_SERVER_ORDER === 'true' || false;
+  if (useServer) {
+    try {
+      const resp = await fetch('/api/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      if (!resp.ok) {
+        const body = await resp.text();
+        throw new Error('Server order failed: ' + resp.status + ' ' + body);
+      }
+      const json = await resp.json();
+      return json.id;
+    } catch (err) {
+      console.error('Error sending order to server endpoint:', err);
+      throw err;
+    }
+  }
+
   try {
-    // Save order to Firestore
+    // Save order to Firestore directly from client
     let docRef;
     try {
       docRef = await addDoc(collection(db, "orders"), {
@@ -29,7 +50,8 @@ export const saveOrder = async (orderData) => {
 
     // Build email params compatible with the provided HTML template (mustache style)
     const emailParams = {
-      to_email: "ooale47@gmail.com",
+      // send confirmation to the customer by default; you can also include an admin email in your template
+      to_email: orderData.customerEmail || orderData.email || "ooale47@gmail.com",
       order_id: docRef.id,
       customer_name: orderData.customerName || "Customer",
       email: orderData.customerEmail || orderData.email || "",
