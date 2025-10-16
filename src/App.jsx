@@ -167,65 +167,15 @@ export default function NordaStarMaps() {
   );
 
   const ContactPage = () => {
-    const [formData, setFormData] = useState({
-      name: '',
-      email: '',
-      phone: '',
-      message: '',
-      product: ''
-    });
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-
+    const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '', product: '' });
+    
+    const handleSubmit = () => {
       if (!formData.name || !formData.email || !formData.phone || !formData.product) {
         alert('Te rog completează toate câmpurile obligatorii!');
         return;
       }
-
-      setIsLoading(true);
-
-      try {
-        const orderPayload = {
-          customerName: formData.name,
-          customerEmail: formData.email,
-          customerPhone: formData.phone,
-          items: [
-            {
-              name: formData.product,
-              units: 1,
-              price: 0,
-              image_url: ''
-            }
-          ],
-          shipping: 0,
-          tax: 0,
-          total: 0,
-          message: formData.message,
-          timestamp: new Date()
-        };
-
-        const { saveOrder } = await import('./services/orderService');
-        const orderId = await saveOrder(orderPayload);
-
-        console.log('Order saved with ID:', orderId);
-        alert('Comanda a fost trimisă cu succes! Vă mulțumim! Veți primi un email de confirmare.');
-
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          message: '',
-          product: ''
-        });
-
-      } catch (error) {
-        console.error('Error submitting order:', error);
-        alert('Ne pare rău, a apărut o eroare. Vă rugăm să încercați din nou.');
-      } finally {
-        setIsLoading(false);
-      }
+      alert('Mulțumim pentru comandă! Vă vom contacta în curând pe WhatsApp sau email.');
+      setFormData({ name: '', email: '', phone: '', message: '', product: '' });
     };
 
     return (
@@ -270,64 +220,50 @@ export default function NordaStarMaps() {
 
             <div className="bg-gray-800/50 backdrop-blur p-8 rounded-2xl border border-gray-700">
               <h3 className="text-2xl font-bold text-white mb-6">Plasează Comanda</h3>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Numele tău *"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none"
-                    required
-                    disabled={isLoading}
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email *"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none"
-                    required
-                    disabled={isLoading}
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Telefon (WhatsApp) *"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none"
-                    required
-                    disabled={isLoading}
-                  />
-                  <select
-                    value={formData.product}
-                    onChange={(e) => setFormData({...formData, product: e.target.value})}
-                    className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none"
-                    required
-                    disabled={isLoading}
-                  >
-                    <option value="">Alege produsul *</option>
-                    {products.map(p => (
-                      <option key={p.id} value={p.name}>{p.name}</option>
-                    ))}
-                  </select>
-                  <textarea
-                    placeholder="Mesajul tău (dată, locație, text personalizat)"
-                    value={formData.message}
-                    onChange={(e) => setFormData({...formData, message: e.target.value})}
-                    className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none h-32"
-                    disabled={isLoading}
-                  />
-                  <button
-                    type="submit"
-                    className="w-full bg-yellow-400 text-gray-900 px-6 py-3 rounded-lg font-bold hover:bg-yellow-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'Se trimite...' : 'Trimite Comanda'}
-                  </button>
-                </div>
-                <p className="text-gray-400 text-sm text-center mt-4">* Câmpuri obligatorii</p>
-              </form>
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Numele tău *"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none"
+                />
+                <input
+                  type="email"
+                  placeholder="Email *"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none"
+                />
+                <input
+                  type="tel"
+                  placeholder="Telefon (WhatsApp) *"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none"
+                />
+                <select
+                  value={formData.product}
+                  onChange={(e) => setFormData({...formData, product: e.target.value})}
+                  className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none"
+                >
+                  <option value="">Alege produsul *</option>
+                  {products.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+                </select>
+                <textarea
+                  placeholder="Mesajul tău (dată, locație, text personalizat)"
+                  value={formData.message}
+                  onChange={(e) => setFormData({...formData, message: e.target.value})}
+                  className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none h-32"
+                />
+                <button 
+                  onClick={handleSubmit}
+                  className="w-full bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold hover:bg-yellow-300 transition"
+                >
+                  Trimite Comanda
+                </button>
+                <p className="text-gray-400 text-sm text-center">* Câmpuri obligatorii</p>
+              </div>
             </div>
           </div>
         </div>
