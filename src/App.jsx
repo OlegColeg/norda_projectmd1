@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Moon, Sparkles, Mail, Phone, MapPin, Instagram, Plus, Trash2, Edit2, Save, X } from 'lucide-react';
+import { db } from './firebase';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 
 export default function NordaStarMaps() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -8,10 +10,10 @@ export default function NordaStarMaps() {
   const [adminPassword, setAdminPassword] = useState('');
   const [editingProduct, setEditingProduct] = useState(null);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const defaultProducts = [
     {
-      id: 1,
       name: 'Hartă Stelară Clasică',
       description: 'Hartă stelară personalizată cu rama din lemn și iluminare LED caldă',
       price: '450 MDL',
@@ -19,7 +21,6 @@ export default function NordaStarMaps() {
       details: 'Dimensiuni: 30x40cm, Lemn natural, LED-uri calde, Text personalizat inclus'
     },
     {
-      id: 2,
       name: 'Hartă Stelară Premium',
       description: 'Design elegant cu constelații detaliate și gravare text personalizat',
       price: '550 MDL',
@@ -27,7 +28,6 @@ export default function NordaStarMaps() {
       details: 'Dimensiuni: 40x50cm, Rama premium din lemn masiv, Gravare laser inclusă'
     },
     {
-      id: 3,
       name: 'Hartă Stelară Blue',
       description: 'Iluminare LED albastră pentru un efect magic și cosmic special',
       price: '500 MDL',
@@ -36,19 +36,46 @@ export default function NordaStarMaps() {
     }
   ];
 
+  // Încarcă produsele din Firestore
   useEffect(() => {
-    const savedProducts = localStorage.getItem('nordaProducts');
-    if (savedProducts) {
-      setProducts(JSON.parse(savedProducts));
-    } else {
-      setProducts(defaultProducts);
-      localStorage.setItem('nordaProducts', JSON.stringify(defaultProducts));
-    }
+    loadProducts();
   }, []);
 
-  const saveProducts = (newProducts) => {
-    setProducts(newProducts);
-    localStorage.setItem('nordaProducts', JSON.stringify(newProducts));
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const querySnapshot = await getDocs(collection(db, "products"));
+      const productsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      if (productsData.length === 0) {
+        // Dacă nu există produse, adaugă produsele default
+        await initializeDefaultProducts();
+      } else {
+        setProducts(productsData);
+      }
+    } catch (error) {
+      console.error("Eroare la încărcarea produselor:", error);
+      alert("Eroare la încărcarea produselor. Verifică consola.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const initializeDefaultProducts = async () => {
+    try {
+      for (const product of defaultProducts) {
+        await addDoc(collection(db, "products"), {
+          ...product,
+          createdAt: serverTimestamp()
+        });
+      }
+      await loadProducts();
+    } catch (error) {
+      console.error("Eroare la inițializarea produselor:", error);
+    }
   };
 
   const handleAdminLogin = () => {
@@ -129,53 +156,78 @@ export default function NordaStarMaps() {
     </div>
   );
 
-  const CatalogPage = () => (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-blue-900 pt-32 pb-20">
-      <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-4">
-          Colecția Noastră
-        </h2>
-        <p className="text-gray-300 text-center mb-12 text-lg">
-          Descoperă hărțile stelare care transformă amintirile în artă
-        </p>
-        
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product) => (
-            <div key={product.id} className="bg-gray-800/50 backdrop-blur rounded-2xl overflow-hidden border border-gray-700 hover:border-yellow-400 transition transform hover:scale-105">
-              <div className="h-64 overflow-hidden">
-                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-white mb-2">{product.name}</h3>
-                <p className="text-gray-300 mb-3">{product.description}</p>
-                <p className="text-sm text-gray-400 mb-4">{product.details}</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-yellow-400">{product.price}</span>
-                  <button 
-                    onClick={() => setCurrentPage('contact')}
-                    className="bg-yellow-400 text-gray-900 px-6 py-2 rounded-full font-bold hover:bg-yellow-300 transition"
-                  >
-                    Comandă
-                  </button>
+  const CatalogPage = () => {
+    if (loading) {
+      return (
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 to-blue-900 pt-32 pb-20 flex items-center justify-center">
+          <div className="text-white text-xl">Se încarcă produsele...</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-blue-900 pt-32 pb-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-4">
+            Colecția Noastră
+          </h2>
+          <p className="text-gray-300 text-center mb-12 text-lg">
+            Descoperă hărțile stelare care transformă amintirile în artă
+          </p>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.map((product) => (
+              <div key={product.id} className="bg-gray-800/50 backdrop-blur rounded-2xl overflow-hidden border border-gray-700 hover:border-yellow-400 transition transform hover:scale-105">
+                <div className="h-64 overflow-hidden">
+                  <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-2xl font-bold text-white mb-2">{product.name}</h3>
+                  <p className="text-gray-300 mb-3">{product.description}</p>
+                  <p className="text-sm text-gray-400 mb-4">{product.details}</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-2xl font-bold text-yellow-400">{product.price}</span>
+                    <button 
+                      onClick={() => setCurrentPage('contact')}
+                      className="bg-yellow-400 text-gray-900 px-6 py-2 rounded-full font-bold hover:bg-yellow-300 transition"
+                    >
+                      Comandă
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const ContactPage = () => {
     const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '', product: '' });
+    const [submitting, setSubmitting] = useState(false);
     
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
       if (!formData.name || !formData.email || !formData.phone || !formData.product) {
         alert('Te rog completează toate câmpurile obligatorii!');
         return;
       }
-      alert('Mulțumim pentru comandă! Vă vom contacta în curând pe WhatsApp sau email.');
-      setFormData({ name: '', email: '', phone: '', message: '', product: '' });
+
+      try {
+        setSubmitting(true);
+        await addDoc(collection(db, "orders"), {
+          ...formData,
+          status: 'pending',
+          createdAt: serverTimestamp()
+        });
+        alert('Mulțumim pentru comandă! Vă vom contacta în curând pe WhatsApp sau email.');
+        setFormData({ name: '', email: '', phone: '', message: '', product: '' });
+      } catch (error) {
+        console.error("Eroare la salvarea comenzii:", error);
+        alert('A apărut o eroare. Te rog încearcă din nou.');
+      } finally {
+        setSubmitting(false);
+      }
     };
 
     return (
@@ -258,9 +310,10 @@ export default function NordaStarMaps() {
                 />
                 <button 
                   onClick={handleSubmit}
-                  className="w-full bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold hover:bg-yellow-300 transition"
+                  disabled={submitting}
+                  className="w-full bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold hover:bg-yellow-300 transition disabled:opacity-50"
                 >
-                  Trimite Comanda
+                  {submitting ? 'Se trimite...' : 'Trimite Comanda'}
                 </button>
                 <p className="text-gray-400 text-sm text-center">* Câmpuri obligatorii</p>
               </div>
@@ -275,32 +328,63 @@ export default function NordaStarMaps() {
     const [newProduct, setNewProduct] = useState({
       name: '', description: '', price: '', image: '', details: ''
     });
+    const [adding, setAdding] = useState(false);
 
-    const addProduct = () => {
+    const addProduct = async () => {
       if (!newProduct.name || !newProduct.price) {
         alert('Completează numele și prețul produsului!');
         return;
       }
-      const product = { 
-        ...newProduct, 
-        id: Date.now(),
-        image: newProduct.image || 'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=800'
-      };
-      saveProducts([...products, product]);
-      setNewProduct({ name: '', description: '', price: '', image: '', details: '' });
-      alert('Produs adăugat cu succes!');
-    };
-
-    const deleteProduct = (id) => {
-      if (confirm('Sigur vrei să ștergi acest produs?')) {
-        saveProducts(products.filter(p => p.id !== id));
+      
+      try {
+        setAdding(true);
+        await addDoc(collection(db, "products"), {
+          ...newProduct,
+          image: newProduct.image || 'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=800',
+          createdAt: serverTimestamp()
+        });
+        setNewProduct({ name: '', description: '', price: '', image: '', details: '' });
+        await loadProducts();
+        alert('Produs adăugat cu succes!');
+      } catch (error) {
+        console.error("Eroare la adăugarea produsului:", error);
+        alert('Eroare la adăugarea produsului. Verifică consola.');
+      } finally {
+        setAdding(false);
       }
     };
 
-    const updateProduct = () => {
-      saveProducts(products.map(p => p.id === editingProduct.id ? editingProduct : p));
-      setEditingProduct(null);
-      alert('Produs actualizat cu succes!');
+    const deleteProduct = async (id) => {
+      if (confirm('Sigur vrei să ștergi acest produs?')) {
+        try {
+          await deleteDoc(doc(db, "products", id));
+          await loadProducts();
+          alert('Produs șters cu succes!');
+        } catch (error) {
+          console.error("Eroare la ștergerea produsului:", error);
+          alert('Eroare la ștergerea produsului.');
+        }
+      }
+    };
+
+    const updateProduct = async () => {
+      try {
+        const productRef = doc(db, "products", editingProduct.id);
+        await updateDoc(productRef, {
+          name: editingProduct.name,
+          description: editingProduct.description,
+          price: editingProduct.price,
+          image: editingProduct.image,
+          details: editingProduct.details,
+          updatedAt: serverTimestamp()
+        });
+        setEditingProduct(null);
+        await loadProducts();
+        alert('Produs actualizat cu succes!');
+      } catch (error) {
+        console.error("Eroare la actualizarea produsului:", error);
+        alert('Eroare la actualizarea produsului.');
+      }
     };
 
     return (
@@ -358,9 +442,10 @@ export default function NordaStarMaps() {
             </div>
             <button 
               onClick={addProduct} 
-              className="bg-yellow-400 text-gray-900 px-6 py-3 rounded-lg font-bold hover:bg-yellow-300 transition flex items-center gap-2"
+              disabled={adding}
+              className="bg-yellow-400 text-gray-900 px-6 py-3 rounded-lg font-bold hover:bg-yellow-300 transition flex items-center gap-2 disabled:opacity-50"
             >
-              <Plus size={20} /> Adaugă Produs
+              <Plus size={20} /> {adding ? 'Se adaugă...' : 'Adaugă Produs'}
             </button>
           </div>
 
