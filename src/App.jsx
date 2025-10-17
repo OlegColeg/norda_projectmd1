@@ -101,7 +101,7 @@ export default function NordaStarMaps() {
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentPage('home')}>
-            <img src="/public/images/norda.svg" alt="Norda Logo" width={90}/>
+            <img src="/images/norda.svg" alt="Norda Logo" width={90}/>
             {/* <Sparkles className="text-yellow-400" size={32} />
             <h1 className="text-2xl font-bold text-white">Norda</h1> */}
           </div>
