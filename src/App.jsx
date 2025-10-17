@@ -122,7 +122,7 @@ export default function NordaStarMaps() {
           <div className="text-center mb-16">
             <div className="flex justify-center mb-6">
               <div className="relative animate-pulse">
-                <img src="/public/images/norda.svg" alt="Norda Logo" width={200} />
+                <img src="/images/norda.svg" alt="Norda Logo" width={200} />
                 <Sparkles className="absolute -top-4 -right-4 text-yellow-400 animate-bounce" size={24} />
               </div>
             </div>
