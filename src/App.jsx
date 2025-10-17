@@ -100,11 +100,15 @@ export default function NordaStarMaps() {
     <header className="fixed top-0 w-full bg-gray-900/95 backdrop-blur-sm z-50 border-b border-gray-800">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentPage('home')}>
-            <img src="/images/norda.svg" alt="Norda Logo" width={90}/>
-            {/* <Sparkles className="text-yellow-400" size={32} />
-            <h1 className="text-2xl font-bold text-white">Norda</h1> */}
-          </div>
+<div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentPage('home')}>
+ <div className="w-[90px] h-[38px] flex-shrink-0">
+  <img
+    src="/images/norda.svg"
+    alt="Norda Logo"
+    className="w-full h-full object-contain"
+  />
+</div>
+</div>
           <nav className="flex gap-6 items-center">
             <button onClick={() => setCurrentPage('home')} className="text-gray-300 hover:text-white transition">Acasă</button>
             <button onClick={() => setCurrentPage('catalog')} className="text-gray-300 hover:text-white transition">Catalog</button>
