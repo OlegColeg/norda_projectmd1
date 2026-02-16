@@ -86,8 +86,8 @@ function CustomOrderPage({ products, customOrder, setCustomOrder, contactInfo, s
           <div className="lg:col-span-2">
             <div className="sticky top-28 bg-gray-800/50 backdrop-blur p-6 rounded-2xl border border-gray-700">
               <h3 className="text-2xl font-bold text-white mb-4">Sumar Comandă</h3>
-              <div className="h-48 w-full bg-gray-900 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                <img src={selectedProduct?.image} alt={selectedProduct?.name} className="w-full h-full object-cover"/>
+              <div className="aspect-[3/4] w-full bg-gray-900 rounded-lg mb-4 flex items-center justify-center overflow-hidden cursor-pointer group" onClick={() => setSelectedImage(selectedProduct?.image)}>
+                <img src={selectedProduct?.image} alt={selectedProduct?.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
               </div>
 
               <div className="space-y-2 text-gray-300">
@@ -115,7 +115,7 @@ function CustomOrderPage({ products, customOrder, setCustomOrder, contactInfo, s
               <div className="mt-6 pt-4 border-t border-gray-600">
                 <div className="flex justify-between items-center text-2xl font-bold">
                   <span className="text-white">Total:</span>
-                  <span className="text-yellow-400">{selectedProduct?.price}</span>
+                  <span className="text-yellow-400">{selectedProduct?.price} MDL</span>
                 </div>
               </div>
 
@@ -139,6 +139,8 @@ export default function NordaStarMaps() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   // Starea pentru comanda personalizată
   const [customOrder, setCustomOrder] = useState({
@@ -158,21 +160,21 @@ export default function NordaStarMaps() {
     {
       name: 'Hartă Stelară Clasică',
       description: 'Hartă stelară personalizată cu rama din lemn și iluminare LED caldă',
-      price: '450 MDL',
+      price: '450',
       image: '/public/images/norda-warm-led-front.jpg',
       details: 'Dimensiuni: 30x40cm, Lemn natural, LED-uri calde, Text personalizat inclus'
     },
     {
       name: 'Hartă Stelară Premium',
       description: 'Design elegant cu constelații detaliate și gravare text personalizat',
-      price: '550 MDL',
+      price: '550',
       image: '',
       details: 'Dimensiuni: 40x50cm, Rama premium din lemn masiv, Gravare laser inclusă'
     },
     {
       name: 'Hartă Stelară Blue',
       description: 'Iluminare LED albastră pentru un efect magic și cosmic special',
-      price: '500 MDL',
+      price: '500',
       image: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800&auto=format&fit=crop',
       details: 'Dimensiuni: 30x40cm, LED-uri albastre intense, Efect neon unic'
     }
@@ -255,7 +257,7 @@ export default function NordaStarMaps() {
         event_time: customOrder.time || 'Nespecificat',
         location: customOrder.location,
         message: customOrder.message || 'Fără mesaj',
-        product_price: selectedProduct?.price || 'Preț la cerere',
+        product_price: selectedProduct?.price ? `${selectedProduct.price} MDL` : 'Preț la cerere',
         order_id: orderRef.id
       });
 
@@ -342,6 +344,59 @@ export default function NordaStarMaps() {
     </div>
   );
   
+  const ImageModal = ({ product, onClose }) => {
+    if (!product) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="relative max-w-5xl w-full max-h-[90vh] flex flex-col md:flex-row items-stretch gap-6 bg-gray-800/50 backdrop-blur rounded-2xl border border-gray-700 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          
+          {/* Buton X - sus dreapta */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 bg-yellow-400 hover:bg-yellow-300 text-gray-900 rounded-full p-2 transition transform hover:scale-110 z-10"
+            aria-label="Închide"
+          >
+            <X size={24} />
+          </button>
+
+          {/* Imagine */}
+          <div className="w-full md:w-1/2 flex items-center justify-center bg-gray-900 p-4">
+            <img 
+              src={product.image} 
+              alt={product.name} 
+              className="w-full h-full object-contain rounded-lg"
+            />
+          </div>
+
+          {/* Detalii */}
+          <div className="w-full md:w-1/2 flex flex-col p-6 md:p-8">
+            <h2 className="text-3xl font-bold text-white mb-4 pr-10">{product.name}</h2>
+            
+            <div className="scrollable-text flex-grow mb-6 max-h-60">
+              <p className="text-gray-300 mb-4">{product.description}</p>
+              <p className="text-gray-400 text-sm">{product.details}</p>
+            </div>
+
+            <div className="flex items-center justify-between border-t border-gray-600 pt-4">
+              <span className="text-3xl font-bold text-yellow-400">{product.price} MDL</span>
+              <button 
+                onClick={() => {
+                  setCustomOrder(prev => ({...prev, productName: product.name}));
+                  setCurrentPage('order');
+                  onClose();
+                }}
+                className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-6 py-3 rounded-full font-bold transition"
+              >
+                Comanda
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const CatalogPage = () => {
     if (loading) {
       return (
@@ -361,26 +416,30 @@ export default function NordaStarMaps() {
             Descoperă hărțile stelare care transformă amintirile în artă
           </p>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map((product) => (
-              <div key={product.id} className="bg-gray-800/50 backdrop-blur rounded-2xl overflow-hidden border border-gray-700 hover:border-yellow-400 transition transform hover:-translate-y-2">
-                <div className="h-64 overflow-hidden">
-                  <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+              <div key={product.id} className="bg-gray-800/50 backdrop-blur rounded-2xl overflow-hidden border border-gray-700 hover:border-yellow-400 transition transform hover:-translate-y-2 flex flex-col h-full">
+                <div className="aspect-square overflow-hidden cursor-pointer group flex-shrink-0" onClick={() => setSelectedProduct(product)}>
+                  <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
                 </div>
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold text-white mb-2">{product.name}</h3>
-                  <p className="text-gray-300 mb-3">{product.description}</p>
-                  <p className="text-sm text-gray-400 mb-4">{product.details}</p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold text-yellow-400">{product.price}</span>
+                <div className="p-4 flex flex-col flex-grow">
+                  <h3 className="text-lg font-bold text-white mb-2">{product.name}</h3>
+                  <div className="flex-grow overflow-hidden flex flex-col">
+                    <p className="text-gray-300 mb-2 text-sm line-clamp-3">{product.description?.length > 90 ? product.description.substring(0, 90) + '...' : product.description}</p>
+                    <div className="scrollable-text flex-grow max-h-16">
+                      <p className="text-xs text-gray-400 line-clamp-2">{product.details?.length > 300 ? product.details.substring(0, 300) + '...' : product.details}</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-600">
+                    <span className="text-lg font-bold text-yellow-400">{product.price} MDL</span>
                       <button 
                       onClick={() => {
                         setCustomOrder(prev => ({...prev, productName: product.name}));
                         setCurrentPage('order');
                       }}
-                      className="bg-yellow-400 text-gray-900 px-6 py-2 rounded-full font-bold hover:bg-yellow-300 transition"
+                      className="bg-yellow-400 text-gray-900 px-4 py-1 text-sm rounded-full font-bold hover:bg-yellow-300 transition"
                     >
-                      Personalizează
+                      Comanda
                     </button>
                   </div>
                 </div>
@@ -397,6 +456,8 @@ export default function NordaStarMaps() {
   const AdminPage = () => {
     const [newProduct, setNewProduct] = useState({ name: '', description: '', price: '', image: '', details: '' });
     const [adding, setAdding] = useState(false);
+    const MAX_DESCRIPTION = 90;
+    const MAX_DETAILS = 300;
 
     const addProduct = async () => {
       if (!newProduct.name || !newProduct.price) {
@@ -462,38 +523,93 @@ export default function NordaStarMaps() {
             <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2"><Plus className="text-yellow-400" size={28} /> Adaugă Produs Nou</h3>
             <div className="grid md:grid-cols-2 gap-4 mb-4">
               <input type="text" placeholder="Nume produs *" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} className="bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 outline-none focus:border-yellow-400"/>
-              <input type="text" placeholder="Preț (ex: 450 MDL) *" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} className="bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 outline-none focus:border-yellow-400"/>
+              <div className="relative">
+                <input type="number" placeholder="450" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 outline-none focus:border-yellow-400" />
+                <span className="absolute right-4 top-3 text-gray-400 font-semibold">MDL</span>
+              </div>
               <input type="text" placeholder="URL imagine (optional)" value={newProduct.image} onChange={(e) => setNewProduct({...newProduct, image: e.target.value})} className="bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 outline-none focus:border-yellow-400 md:col-span-2"/>
-              <textarea placeholder="Descriere scurtă" value={newProduct.description} onChange={(e) => setNewProduct({...newProduct, description: e.target.value})} className="bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 outline-none focus:border-yellow-400 h-24"/>
-              <textarea placeholder="Detalii tehnice" value={newProduct.details} onChange={(e) => setNewProduct({...newProduct, details: e.target.value})} className="bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 outline-none focus:border-yellow-400 h-24"/>
+              
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-gray-300 text-sm">Descriere Scurtă *</label>
+                  <span className={`text-xs ${newProduct.description.length > MAX_DESCRIPTION ? 'text-red-400' : 'text-gray-400'}`}>{newProduct.description.length}/{MAX_DESCRIPTION}</span>
+                </div>
+                <textarea placeholder="Max 90 caractere" value={newProduct.description} onChange={(e) => {
+                  if (e.target.value.length <= MAX_DESCRIPTION) {
+                    setNewProduct({...newProduct, description: e.target.value});
+                  }
+                }} className={`w-full bg-gray-700 text-white px-4 py-3 rounded-lg border outline-none focus:border-yellow-400 h-20 ${newProduct.description.length > MAX_DESCRIPTION ? 'border-red-500' : 'border-gray-600'}`}/>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-gray-300 text-sm">Detalii Tehnice *</label>
+                  <span className={`text-xs ${newProduct.details.length > MAX_DETAILS ? 'text-red-400' : 'text-gray-400'}`}>{newProduct.details.length}/{MAX_DETAILS}</span>
+                </div>
+                <textarea placeholder="Max 300 caractere" value={newProduct.details} onChange={(e) => {
+                  if (e.target.value.length <= MAX_DETAILS) {
+                    setNewProduct({...newProduct, details: e.target.value});
+                  }
+                }} className={`w-full bg-gray-700 text-white px-4 py-3 rounded-lg border outline-none focus:border-yellow-400 h-20 ${newProduct.details.length > MAX_DETAILS ? 'border-red-500' : 'border-gray-600'}`}/>
+              </div>
             </div>
-            <button onClick={addProduct} disabled={adding} className="bg-yellow-400 text-gray-900 px-6 py-3 rounded-lg font-bold hover:bg-yellow-300 transition flex items-center gap-2 disabled:opacity-50"><Plus size={20} /> {adding ? 'Se adaugă...' : 'Adaugă Produs'}</button>
+            <button onClick={addProduct} disabled={adding || newProduct.description.length === 0 || newProduct.details.length === 0} className="bg-yellow-400 text-gray-900 px-6 py-3 rounded-lg font-bold hover:bg-yellow-300 transition flex items-center gap-2 disabled:opacity-50"><Plus size={20} /> {adding ? 'Se adaugă...' : 'Adaugă Produs'}</button>
           </div>
           <h3 className="text-2xl font-bold text-white mb-6">Produse Existente ({products.length})</h3>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map((product) => (
-              <div key={product.id} className="bg-gray-800/50 backdrop-blur rounded-xl border border-gray-700 p-4">
+              <div key={product.id} className="bg-gray-800/50 backdrop-blur rounded-2xl overflow-hidden border border-gray-700 hover:border-yellow-400 transition transform hover:-translate-y-2 flex flex-col h-full">
                 {editingProduct?.id === product.id ? (
-                  <div className="space-y-3">
+                  <div className="p-4 space-y-3 flex-grow flex flex-col">
                     <input type="text" value={editingProduct.name} onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full bg-gray-700 text-white px-3 py-2 rounded text-sm border border-gray-600 outline-none" placeholder="Nume"/>
-                    <input type="text" value={editingProduct.price} onChange={(e) => setEditingProduct({...editingProduct, price: e.target.value})} className="w-full bg-gray-700 text-white px-3 py-2 rounded text-sm border border-gray-600 outline-none" placeholder="Preț"/>
+                    <div className="relative">
+                      <input type="number" value={editingProduct.price} onChange={(e) => setEditingProduct({...editingProduct, price: e.target.value})} className="w-full bg-gray-700 text-white px-3 py-2 rounded text-sm border border-gray-600 outline-none pr-10" placeholder="Preț"/>
+                      <span className="absolute right-3 top-2 text-gray-400 text-sm">MDL</span>
+                    </div>
                     <input type="text" value={editingProduct.image} onChange={(e) => setEditingProduct({...editingProduct, image: e.target.value})} className="w-full bg-gray-700 text-white px-3 py-2 rounded text-sm border border-gray-600 outline-none" placeholder="URL imagine"/>
-                    <textarea value={editingProduct.description} onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})} className="w-full bg-gray-700 text-white px-3 py-2 rounded text-sm h-20 border border-gray-600 outline-none" placeholder="Descriere"/>
-                    <textarea value={editingProduct.details} onChange={(e) => setEditingProduct({...editingProduct, details: e.target.value})} className="w-full bg-gray-700 text-white px-3 py-2 rounded text-sm h-20 border border-gray-600 outline-none" placeholder="Detalii"/>
-                    <div className="flex gap-2">
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-gray-300 text-xs">Descriere ({editingProduct.description.length}/{MAX_DESCRIPTION})</label>
+                      </div>
+                      <textarea value={editingProduct.description} onChange={(e) => {
+                        if (e.target.value.length <= MAX_DESCRIPTION) {
+                          setEditingProduct({...editingProduct, description: e.target.value});
+                        }
+                      }} className={`w-full bg-gray-700 text-white px-3 py-2 rounded text-sm h-16 border outline-none ${editingProduct.description.length > MAX_DESCRIPTION ? 'border-red-500' : 'border-gray-600'}`} placeholder="Descriere (max 90)"/>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-gray-300 text-xs">Detalii ({editingProduct.details.length}/{MAX_DETAILS})</label>
+                      </div>
+                      <textarea value={editingProduct.details} onChange={(e) => {
+                        if (e.target.value.length <= MAX_DETAILS) {
+                          setEditingProduct({...editingProduct, details: e.target.value});
+                        }
+                      }} className={`w-full bg-gray-700 text-white px-3 py-2 rounded text-sm h-16 border outline-none ${editingProduct.details.length > MAX_DETAILS ? 'border-red-500' : 'border-gray-600'}`} placeholder="Detalii (max 300)"/>
+                    </div>
+                    <div className="flex gap-2 mt-auto">
                       <button onClick={updateProduct} className="flex-1 bg-green-500 text-white py-2 rounded text-sm flex items-center justify-center gap-1 hover:bg-green-600 transition"><Save size={16} /> Salvează</button>
                       <button onClick={() => setEditingProduct(null)} className="flex-1 bg-gray-600 text-white py-2 rounded text-sm flex items-center justify-center gap-1 hover:bg-gray-500 transition"><X size={16} /> Anulează</button>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <img src={product.image} alt={product.name} className="w-full h-40 object-cover rounded mb-3" />
-                    <h4 className="text-white font-bold mb-1 text-lg">{product.name}</h4>
-                    <p className="text-gray-300 text-sm mb-2">{product.description}</p>
-                    <p className="text-yellow-400 font-bold mb-3 text-lg">{product.price}</p>
-                    <div className="flex gap-2">
-                      <button onClick={() => setEditingProduct(product)} className="flex-1 bg-blue-500 text-white py-2 rounded text-sm flex items-center justify-center gap-1 hover:bg-blue-600 transition"><Edit2 size={16} /> Editează</button>
-                      <button onClick={() => deleteProduct(product.id)} className="flex-1 bg-red-500 text-white py-2 rounded text-sm flex items-center justify-center gap-1 hover:bg-red-600 transition"><Trash2 size={16} /> Șterge</button>
+                    <div className="aspect-square overflow-hidden cursor-pointer group flex-shrink-0">
+                      <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                    </div>
+                    <div className="p-4 flex flex-col flex-grow">
+                      <h4 className="text-lg font-bold text-white mb-2">{product.name}</h4>
+                      <p className="text-gray-300 text-sm mb-2 line-clamp-3">{product.description}</p>
+                      <div className="scrollable-text flex-grow max-h-16">
+                        <p className="text-xs text-gray-400 line-clamp-2">{product.details}</p>
+                      </div>
+                      <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-600">
+                        <span className="text-lg font-bold text-yellow-400">{product.price} MDL</span>
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        <button onClick={() => setEditingProduct(product)} className="flex-1 bg-blue-500 text-white py-2 rounded text-sm flex items-center justify-center gap-1 hover:bg-blue-600 transition"><Edit2 size={14} /> Editează</button>
+                        <button onClick={() => deleteProduct(product.id)} className="flex-1 bg-red-500 text-white py-2 rounded text-sm flex items-center justify-center gap-1 hover:bg-red-600 transition"><Trash2 size={14} /> Șterge</button>
+                      </div>
                     </div>
                   </>
                 )}
@@ -509,6 +625,8 @@ export default function NordaStarMaps() {
     <div className="min-h-screen bg-gray-900 text-white">
       <Header />
       
+      <ImageModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+
       <main>
         {currentPage === 'home' && <HomePage />}
         {currentPage === 'catalog' && <CatalogPage />}

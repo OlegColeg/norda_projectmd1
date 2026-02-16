@@ -13,3 +13,28 @@ img, svg {
   max-width: 100%;
   height: auto;
 }
+
+/* Scroll elegant mic pentru text container */
+.scrollable-text {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #fbbf24 #1f2937;
+}
+
+.scrollable-text::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-text::-webkit-scrollbar-track {
+  background: #1f2937;
+  border-radius: 10px;
+}
+
+.scrollable-text::-webkit-scrollbar-thumb {
+  background: #fbbf24;
+  border-radius: 10px;
+}
+
+.scrollable-text::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}
