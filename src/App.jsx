@@ -325,7 +325,7 @@ export default function NordaStarMaps() {
       });
 
       const selectedProduct = products.find(p => p.name === customOrder.productName);
-      await emailjs.send('service_4r99bm7', 'template_ql0ymii', {
+      await emailjs.send('service_q8hkkw5', 'template_ql0ymii', {
         to_email: contactInfo.email,
         customer_name: contactInfo.name,
         customer_phone: contactInfo.phone,

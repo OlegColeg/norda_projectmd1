@@ -417,24 +417,18 @@
             <!-- Message Section -->
             <div class="section">
                 <div class="section-title">💬 Mesajul Tău</div>
-                <div class="message-box {{#if message}}{{else}}empty{{/if}}">
-                    {{#if message}}
-                        {{message}}
-                    {{else}}
-                        <em>Niciun mesaj adăugat</em>
-                    {{/if}}
+                <div class="message-box">
+                    {{message}}
                 </div>
             </div>
 
             <!-- Client Notes -->
-            {{#if client_notes}}
             <div class="section">
                 <div class="section-title">📝 Cerințe/Comentarii Suplimentare</div>
                 <div class="message-box">
                     {{client_notes}}
                 </div>
             </div>
-            {{/if}}
 
             <!-- Price Highlight -->
             <div class="price-section">
