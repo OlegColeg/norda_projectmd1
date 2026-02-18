@@ -335,6 +335,13 @@
                 Comanda ta a fost primită cu succes. Te vom contacta în curând pentru confirmarea finală și detalii de livrare. Iată datele comenzii tale:
             </p>
 
+            <!-- Product Image -->
+            {{#product_image}}
+            <div style="text-align: center; margin-bottom: 24px;">
+                <img src="{{product_image}}" alt="{{product_name}}" style="max-width: 100%; height: auto; border-radius: 8px; max-height: 250px; display: block;">
+            </div>
+            {{/product_image}}
+
             <!-- Order Number - Highlight -->
             <div class="highlight-box order-number">
                 <div class="order-number-label">Numărul Comenzii</div>
@@ -369,8 +376,8 @@
                         <div class="info-value">{{product_name}}</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">Design</div>
-                        <div class="info-value">{{design}}</div>
+                        <div class="info-label">Format</div>
+                        <div class="info-value">{{format}}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Preț</div>
@@ -386,28 +393,35 @@
                     <div class="timeline-item">
                         <div class="timeline-dot">📍</div>
                         <div class="timeline-content">
-                            <div class="timeline-label">Data Evenimentului</div>
-                            <div class="timeline-value">{{event_date}}</div>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot">🕐</div>
-                        <div class="timeline-content">
-                            <div class="timeline-label">Ora Evenimentului</div>
-                            <div class="timeline-value">{{event_time}}</div>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot">📌</div>
-                        <div class="timeline-content">
                             <div class="timeline-label">Locația</div>
                             <div class="timeline-value">{{location}}</div>
                         </div>
                     </div>
                     <div class="timeline-item">
+                        <div class="timeline-dot">🕐</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Data Evenimentului</div>
+                            <div class="timeline-value">{{event_date}}</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot">⏰</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Ora Evenimentului</div>
+                            <div class="timeline-value">{{event_time}}</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item" id="secondLocationItem" style="display: {{has_second_location}};">
+                        <div class="timeline-dot">📍</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">A Doua Locație</div>
+                            <div class="timeline-value">{{location2}}</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
                         <div class="timeline-dot">✓</div>
                         <div class="timeline-content">
-                            <div class="timeline-label">Data Finalizării</div>
+                            <div class="timeline-label">Data Finalizării / Livrării</div>
                             <div class="timeline-value">{{completion_date}}</div>
                         </div>
                     </div>
@@ -433,7 +447,7 @@
             <!-- Price Highlight -->
             <div class="price-section">
                 <div class="price-label">Preț Total</div>
-                <div class="price-value">{{product_price}}</div>
+                <div class="price-value">{{product_price}} MDL</div>
             </div>
 
             <!-- Call to Action -->
@@ -449,14 +463,30 @@
             <div class="footer-text">
                 <strong>Norda Star Maps</strong> | Hărți Stelare Personalizate
             </div>
+            <div class="footer-text" style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">
+                Comanda #{{order_id}} | Ordinul de confirmație: {{order_number}}
+            </div>
             <div class="footer-text" style="font-size: 12px; color: #94a3b8;">
                 © 2026 Norda Star Maps. Toate drepturile rezervate.
             </div>
             <div style="margin-top: 16px;">
                 <a href="mailto:contact@norda.md" class="footer-link" style="margin-right: 16px;">Contact</a>
-                <a href="#" class="footer-link">Website</a>
+                <a href="https://norda-projectmd.web.app" class="footer-link">Website</a>
             </div>
         </div>
     </div>
+
+    <script>
+        // Handle second location display
+        const secondLocationItem = document.getElementById('secondLocationItem');
+        if (secondLocationItem) {
+            const hasSecondLocation = '{{has_second_location}}';
+            if (hasSecondLocation === 'Da (dual-location)' || hasSecondLocation === 'Da') {
+                secondLocationItem.style.display = 'flex';
+            } else {
+                secondLocationItem.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

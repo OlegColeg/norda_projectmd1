@@ -27,107 +27,174 @@ function CustomOrderPage({ products, customOrder, setCustomOrder, contactInfo, s
   }, [products]);
 
   const selectedProduct = products.find(p => p.name === customOrder.productName) || products[0];
+  
+  // Calculate price based on format
+  const calculatePrice = () => {
+    const basePrice = parseFloat(selectedProduct?.price || 0);
+    if (customOrder.format === 'A4') {
+      return Math.round(basePrice * 0.65); // -35% from original price
+    }
+    return basePrice;
+  };
+
+  const finalPrice = calculatePrice();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-blue-900 pt-32 pb-20">
       <div className="max-w-6xl mx-auto px-4">
-        <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-4">Creează Harta Ta Stelară Personalizată</h2>
+        <h2 className="text-3xl md:text-5xl font-bold text-white text-center mb-4">Creează Harta Ta Stelară Personalizată</h2>
         <p className="text-gray-300 text-center mb-12 text-lg">Urmează pașii pentru a crea un cadou de neuitat. Selectează data, locația și designul tău special.</p>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-3 bg-gray-800/50 backdrop-blur p-8 rounded-2xl border border-gray-700">
-            <h3 className="text-2xl font-bold text-white mb-6">1. Detaliile Evenimentului</h3>
+          <div className="lg:col-span-3 bg-gray-800/50 backdrop-blur p-6 md:p-8 rounded-2xl border border-gray-700">
+            <h3 className="text-xl md:text-2xl font-bold text-white mb-6">1. Detaliile Evenimentului</h3>
             <div className="space-y-5">
               <div>
-                <label className="text-white font-semibold mb-2 flex items-center gap-2"><Star size={18} className="text-yellow-400"/> Alege Modelul</label>
-                <select value={customOrder.productName} onChange={(e) => setCustomOrder(prev => ({...prev, productName: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none">
+                <label className="text-white font-semibold mb-2 flex items-center gap-2 text-sm md:text-base"><Star size={18} className="text-yellow-400"/> Alege Modelul</label>
+                <select value={customOrder.productName} onChange={(e) => setCustomOrder(prev => ({...prev, productName: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none text-sm md:text-base">
                   {products.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
                 </select>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-white font-semibold mb-2 flex items-center gap-2"><Calendar size={18} className="text-yellow-400"/> Data Evenimentului *</label>
-                  <input required type="date" value={customOrder.date} onChange={(e) => setCustomOrder(prev => ({...prev, date: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input"/>
+                  <label className="text-white font-semibold mb-2 flex items-center gap-2 text-sm md:text-base"><Calendar size={18} className="text-yellow-400"/> Data Evenimentului *</label>
+                  <input required type="date" value={customOrder.date} onChange={(e) => setCustomOrder(prev => ({...prev, date: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input text-sm md:text-base"/>
                 </div>
                 <div>
-                  <label className="text-white font-semibold mb-2 flex items-center gap-2"><Clock size={18} className="text-yellow-400"/> Ora (Opțional)</label>
-                  <input type="time" value={customOrder.time} onChange={(e) => setCustomOrder(prev => ({...prev, time: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input"/>
+                  <label className="text-white font-semibold mb-2 flex items-center gap-2 text-sm md:text-base"><Clock size={18} className="text-yellow-400"/> Ora (Opțional)</label>
+                  <input type="time" value={customOrder.time} onChange={(e) => setCustomOrder(prev => ({...prev, time: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input text-sm md:text-base"/>
                 </div>
               </div>
 
               <div>
-                <label className="text-white font-semibold mb-2 flex items-center gap-2"><Calendar size={18} className="text-yellow-400"/> Data Finiș (Livrare) *</label>
+                <label className="text-white font-semibold mb-2 flex items-center gap-2 text-sm md:text-base"><Calendar size={18} className="text-yellow-400"/> Data Finiș (Livrare) *</label>
                 <input required type="date" value={customOrder.completionDate} onChange={(e) => setCustomOrder(prev => ({...prev, completionDate: e.target.value}))} 
                   min={new Date(new Date().setDate(new Date().getDate() + 3)).toISOString().split('T')[0]}
-                  className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input" />
+                  className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input text-sm md:text-base" />
                 <p className="text-gray-400 text-xs mt-1">Minimum +3 zile de la azi</p>
               </div>
 
               <div>
-                <label className="text-white font-semibold mb-2 flex items-center gap-2"><MapPin size={18} className="text-yellow-400"/> Locația (Oraș / Adresă) *</label>
-                <input required type="text" placeholder="Ex: Chișinău, Moldova" value={customOrder.location} onFocus={() => console.log('location focused')} onChange={(e) => { setCustomOrder(prev => ({...prev, location: e.target.value})); console.log('location change', e.target.value); }} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input" autoComplete="street-address"/>
+                <label className="text-white font-semibold mb-2 flex items-center gap-2 text-sm md:text-base"><MapPin size={18} className="text-yellow-400"/> Locația (Oraș / Adresă) *</label>
+                <input required type="text" placeholder="Ex: Chișinău, Moldova" value={customOrder.location} onFocus={() => console.log('location focused')} onChange={(e) => { setCustomOrder(prev => ({...prev, location: e.target.value})); console.log('location change', e.target.value); }} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input text-sm md:text-base" autoComplete="street-address"/>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <input 
+                  type="checkbox" 
+                  id="hasSecondLocation" 
+                  checked={customOrder.hasSecondLocation} 
+                  onChange={(e) => setCustomOrder(prev => ({...prev, hasSecondLocation: e.target.checked}))}
+                  className="w-5 h-5 accent-yellow-400 cursor-pointer"
+                />
+                <label htmlFor="hasSecondLocation" className="text-white font-semibold cursor-pointer text-sm md:text-base">
+                  Hartă cu două locații (dual-location)
+                </label>
+              </div>
+
+              {customOrder.hasSecondLocation && (
+                <div>
+                  <label className="text-white font-semibold mb-2 flex items-center gap-2 text-sm md:text-base"><MapPin size={18} className="text-yellow-400"/> A Doua Locație *</label>
+                  <input required type="text" placeholder="Ex: Băilești, Moldova" value={customOrder.location2} onChange={(e) => setCustomOrder(prev => ({...prev, location2: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input text-sm md:text-base" autoComplete="street-address"/>
+                </div>
+              )}
+
+              <div>
+                <label className="text-white font-semibold mb-2 flex items-center gap-2 text-sm md:text-base"><Type size={18} className="text-yellow-400"/> Mesaj Personalizat</label>
+                <textarea placeholder="Ex: Sub acest cer ne-am întâlnit..." value={customOrder.message} onFocus={() => console.log('message focused')} onChange={(e) => { setCustomOrder(prev => ({...prev, message: e.target.value})); console.log('message change', e.target.value); }} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none h-24 mobile-textarea text-sm md:text-base"/>
               </div>
 
               <div>
-                <label className="text-white font-semibold mb-2 flex items-center gap-2"><Type size={18} className="text-yellow-400"/> Mesaj Personalizat</label>
-                <textarea placeholder="Ex: Sub acest cer ne-am întâlnit..." value={customOrder.message} onFocus={() => console.log('message focused')} onChange={(e) => { setCustomOrder(prev => ({...prev, message: e.target.value})); console.log('message change', e.target.value); }} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none h-24 mobile-textarea"/>
+                <label className="text-white font-semibold mb-2 flex items-center gap-2 text-sm md:text-base"><Palette size={18} className="text-yellow-400"/> Format Hartă *</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    type="button"
+                    onClick={() => setCustomOrder(prev => ({...prev, format: 'A3'}))}
+                    className={`py-3 px-3 md:px-4 rounded-lg font-semibold transition text-sm md:text-base ${customOrder.format === 'A3' ? 'bg-yellow-400 text-gray-900' : 'bg-gray-700 text-white border border-gray-600 hover:border-yellow-400'}`}
+                  >
+                    A3 (Standard)
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setCustomOrder(prev => ({...prev, format: 'A4'}))}
+                    className={`py-3 px-3 md:px-4 rounded-lg font-semibold transition text-sm md:text-base ${customOrder.format === 'A4' ? 'bg-yellow-400 text-gray-900' : 'bg-gray-700 text-white border border-gray-600 hover:border-yellow-400'}`}
+                  >
+                    A4 (-35%)
+                  </button>
+                </div>
               </div>
 
               {/* Design selection removed until feature is available */}
 
               <div>
-                <label className="text-white font-semibold mb-2 flex items-center gap-2"><Type size={18} className="text-yellow-400"/> Cerințe/Comentarii Suplimentare (Opțional)</label>
-                <textarea placeholder="Ex: Vreau culori mai calde, sau alte detalii speciale..." value={customOrder.clientNotes} onChange={(e) => setCustomOrder(prev => ({...prev, clientNotes: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none h-20 mobile-textarea"/>
+                <label className="text-white font-semibold mb-2 flex items-center gap-2 text-sm md:text-base"><Type size={18} className="text-yellow-400"/> Cerințe/Comentarii Suplimentare (Opțional)</label>
+                <textarea placeholder="Ex: Vreau culori mai calde, sau alte detalii speciale..." value={customOrder.clientNotes} onChange={(e) => setCustomOrder(prev => ({...prev, clientNotes: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none h-20 mobile-textarea text-sm md:text-base"/>
               </div>
             </div>
 
-            <h3 className="text-2xl font-bold text-white mb-6 mt-10">2. Date de Contact</h3>
+            <h3 className="text-xl md:text-2xl font-bold text-white mb-6 mt-10">2. Date de Contact</h3>
             <div className="space-y-4">
-              <input required type="text" placeholder="Numele tău *" value={contactInfo.name} onChange={(e) => setContactInfo(prev => ({...prev, name: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input" autoComplete="name"/>
-              <input required type="email" placeholder="Email *" value={contactInfo.email} onChange={(e) => setContactInfo(prev => ({...prev, email: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input" autoComplete="email"/>
-              <input required type="tel" placeholder="Telefon (WhatsApp) *" value={contactInfo.phone} onChange={(e) => setContactInfo(prev => ({...prev, phone: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input" autoComplete="tel" inputMode="tel"/>
+              <input required type="text" placeholder="Numele tău *" value={contactInfo.name} onChange={(e) => setContactInfo(prev => ({...prev, name: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input text-sm md:text-base" autoComplete="name"/>
+              <input required type="email" placeholder="Email *" value={contactInfo.email} onChange={(e) => setContactInfo(prev => ({...prev, email: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input text-sm md:text-base" autoComplete="email"/>
+              <input required type="tel" placeholder="Telefon (WhatsApp) *" value={contactInfo.phone} onChange={(e) => setContactInfo(prev => ({...prev, phone: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input text-sm md:text-base" autoComplete="tel" inputMode="tel"/>
             </div>
           </div>
 
           <div className="lg:col-span-2">
             <div className="sticky top-28 bg-gray-800/50 backdrop-blur p-6 rounded-2xl border border-gray-700">
-              <h3 className="text-2xl font-bold text-white mb-4">Sumar Comandă</h3>
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Sumar Comandă</h3>
               <div className="aspect-[3/4] w-full bg-gray-900 rounded-lg mb-4 flex items-center justify-center overflow-hidden cursor-pointer group" onClick={() => setSelectedImage(selectedProduct?.image)}>
                 <img src={selectedProduct?.image || 'https://via.placeholder.com/800x800?text=No+Image'} alt={selectedProduct?.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
               </div>
 
-              <div className="space-y-2 text-gray-300">
-                <div className="flex justify-between items-center">
+              <div className="space-y-2 text-gray-300 text-sm md:text-base">
+                <div className="flex justify-between items-center gap-2">
                   <span className="font-semibold text-white">Model:</span>
-                  <span>{customOrder.productName}</span>
+                  <span className="text-right">{customOrder.productName}</span>
+                </div>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="font-semibold text-white">Format:</span>
+                  <span className="bg-gray-700 px-3 py-1 rounded text-xs md:text-sm">{customOrder.format} {customOrder.format === 'A4' && '(-35%)'}</span>
                 </div>
                 {/* Design hidden until feature is enabled */}
                 <hr className="border-gray-600"/>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center gap-2">
                   <span className="font-semibold text-white">Data Evenimentului:</span>
-                  <span>{customOrder.date || 'Nespecificat'}</span>
+                  <span className="text-right">{customOrder.date || 'Nespecificat'}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center gap-2">
                   <span className="font-semibold text-white">Data Finisării:</span>
-                  <span>{customOrder.completionDate || 'Nespecificat'}</span>
+                  <span className="text-right">{customOrder.completionDate || 'Nespecificat'}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center gap-2">
                   <span className="font-semibold text-white">Locație:</span>
-                  <span className="truncate max-w-[150px]">{customOrder.location || 'Nespecificat'}</span>
+                  <span className="text-right truncate max-w-[150px]">{customOrder.location || 'Nespecificat'}</span>
                 </div>
+                {customOrder.hasSecondLocation && (
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="font-semibold text-white">A 2-a Locație:</span>
+                    <span className="text-right truncate max-w-[150px]">{customOrder.location2 || 'Nespecificat'}</span>
+                  </div>
+                )}
                 <hr className="border-gray-600"/>
-                <p className="text-sm pt-2"><span className="font-semibold text-white">Mesaj: </span>{customOrder.message || 'Fără mesaj'}</p>
+                <p className="text-xs md:text-sm pt-2"><span className="font-semibold text-white">Mesaj: </span><span className="text-gray-400">{customOrder.message || 'Fără mesaj'}</span></p>
               </div>
 
               <div className="mt-6 pt-4 border-t border-gray-600">
-                <div className="flex justify-between items-center text-2xl font-bold">
+                <div className="flex justify-between items-center text-xl md:text-2xl font-bold">
                   <span className="text-white">Total:</span>
-                  <span className="text-yellow-400">{selectedProduct?.price} MDL</span>
+                  <span className="text-yellow-400">{finalPrice} MDL</span>
                 </div>
               </div>
 
-              <button onClick={handleSubmit} disabled={submitting} className="w-full mt-6 bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold hover:bg-yellow-300 transition disabled:opacity-50">
+              <div className="mt-6 p-4 bg-orange-900/30 border border-orange-600 rounded-lg">
+                <p className="text-orange-200 text-xs md:text-sm leading-relaxed">
+                  <span className="font-bold text-orange-300">⚠️ Important:</span> Ramele și unele culori pot varia ușor în dependență de ecran și disponibilitatea în stoc. Produsele finale pot diferi ușor de imaginile din catalog, deoarece ramele sunt componente core și nu sunt mereu identice cu cele prezentate. Calitatea și funcționalitatea rămân 100% garantate.
+                </p>
+              </div>
+
+              <button onClick={handleSubmit} disabled={submitting} className="w-full mt-6 bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold hover:bg-yellow-300 transition disabled:opacity-50 text-sm md:text-base">
                 {submitting ? 'Se trimite...' : 'Trimite Comanda'}
               </button>
               <p className="text-gray-400 text-xs text-center mt-3">* Câmpuri obligatorii</p>
@@ -156,14 +223,17 @@ export default function NordaStarMaps() {
 
   // Starea pentru comanda personalizată
   const [customOrder, setCustomOrder] = useState({
-    productName: 'Hartă Stelară Clasică',
+    productName: 'Momentul Nostru',
     design: 'Noapte înstelată',
     date: '',
     time: '',
     location: '',
+    hasSecondLocation: false,
+    location2: '',
     message: '',
     completionDate: '',
     clientNotes: '',
+    format: 'A3',
   });
 
   // Date de contact pentru comanda personalizată (lifted state)
@@ -173,10 +243,10 @@ export default function NordaStarMaps() {
   const defaultProducts = [
     {
       name: 'Hartă Stelară Clasică',
-      description: 'Hartă stelară personalizată cu rama din lemn natural și iluminare LED caldă premium',
+      description: 'Hartă stelară personalizată cu rama din lemn natural - cadou elegant și memorabil',
       price: '450',
-      image: '/public/images/norda-warm-led-front.jpg',
-      details: 'Cadou personalizat elegant: Dimensiuni 30x40cm, Lemn natural masiv, LED-uri calde 3000K, Text personalizat cu data și locația, Perfect pentru aniversări și momente speciale'
+      image: '',
+      details: 'Cadou personalizat elegant: Dimensiuni 30x40cm, Lemn natural masiv, Text personalizat cu data și locația, Perfect pentru aniversări și momente speciale'
     },
     {
       name: 'Hartă Stelară Premium',
@@ -187,10 +257,10 @@ export default function NordaStarMaps() {
     },
     {
       name: 'Hartă Stelară Blue',
-      description: 'Iluminare LED albastră cosmic pentru efect magic și special sub cer personalizat',
+      description: 'Hartă stelară cu constelații albastre cosmic pentru efect special și unic',
       price: '500',
-      image: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800&auto=format&fit=crop',
-      details: 'Hartă stele iluminată albastră: Dimensiuni 30x40cm, LED-uri albastre intense 6500K, Efect neon unic și cosmic, Cadou romantic și special pentru momente importante'
+      image: '',
+      details: 'Hartă stele albastra cosmic: Dimensiuni 30x40cm, Constelații albastre intense, Efect cosmic unic, Cadou romantic și special pentru momente importante'
     }
   ];
 
@@ -337,6 +407,18 @@ export default function NordaStarMaps() {
     try {
       setSubmitting(true);
 
+      // Calculate finalPrice based on format
+      // Caută produsul în array-ul local dacă nu e în Firebase
+      let selectedProduct = products.find(p => p.name === customOrder.productName);
+      if (!selectedProduct) {
+        selectedProduct = defaultProducts.find(p => p.name === customOrder.productName);
+      }
+      
+      const basePrice = parseFloat(selectedProduct?.price || 0);
+      const finalPrice = customOrder.format === 'A4' ? Math.round(basePrice * 0.65) : basePrice;
+      // Folosește imaginea din produs, dacă nu are, nu trimite nimic (EmailJS nu va afișa secțiunea)
+      const productImage = selectedProduct?.image || '';
+
       // Genereaza numar de comanda simplu (timestamp-based)
       const orderNumber = Math.floor(Date.now() / 1000) % 1000000;
 
@@ -344,11 +426,12 @@ export default function NordaStarMaps() {
         contact: contactInfo,
         order: customOrder,
         orderNumber: orderNumber,
+        finalPrice: finalPrice,
+        format: customOrder.format,
         status: 'active',
         createdAt: serverTimestamp()
       });
 
-      const selectedProduct = products.find(p => p.name === customOrder.productName);
       await emailjs.send('service_q8hkkw5', 'template_ql0ymii', {
         to_email: contactInfo.email,
         customer_name: contactInfo.name,
@@ -358,16 +441,20 @@ export default function NordaStarMaps() {
         event_date: customOrder.date,
         event_time: customOrder.time || 'Nespecificat',
         location: customOrder.location,
+        location2: customOrder.location2 || 'N/A',
+        has_second_location: customOrder.hasSecondLocation ? 'Da (dual-location)' : 'Nu',
         message: customOrder.message || 'Fără mesaj',
         completion_date: customOrder.completionDate || 'Nespecificat',
         client_notes: customOrder.clientNotes || 'Fără comentarii',
-        product_price: selectedProduct?.price ? `${selectedProduct.price} MDL` : 'Preț la cerere',
+        format: customOrder.format,
+        product_price: finalPrice,
+        product_image: productImage,
         order_number: orderNumber,
         order_id: orderRef.id
       });
 
       alert('Mulțumim pentru comandă! Confirmarea a fost trimisă pe emailul tău. Vă vom contacta în curând!');
-      setCustomOrder({ productName: 'Hartă Stelară Clasică', design: 'Noapte înstelată', date: '', time: '', location: '', message: '', completionDate: '', clientNotes: '' });
+      setCustomOrder({ productName: 'Momentul Nostru', design: 'Noapte înstelată', date: '', time: '', location: '', message: '', completionDate: '', clientNotes: '', format: 'A3' });
       setContactInfo({ name: '', email: '', phone: '' });
     } catch (error) {
       console.error("Eroare la salvarea comenzii sau trimiterea emailului:", error);
@@ -436,7 +523,7 @@ export default function NordaStarMaps() {
               Creează o hartă stelară personalizată cu data și locația unui moment special. Cadouri unice cu iluminare LED caldă și design premium pentru aniversări, nunți și momente romantice.
             </p>
             <button 
-              onClick={() => setCurrentPage('order')}
+              onClick={() => setCurrentPage('catalog')}
               className="bg-yellow-400 text-gray-900 px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-300 transition transform hover:scale-105"
             >
               Creează Harta Ta
@@ -456,8 +543,8 @@ export default function NordaStarMaps() {
             </div>
             <div className="bg-gray-800/50 backdrop-blur p-8 rounded-2xl border border-gray-700 hover:border-yellow-400 transition">
               <Moon className="text-yellow-400 mb-4" size={40} />
-              <h3 className="text-xl font-bold text-white mb-3">Iluminare LED</h3>
-              <p className="text-gray-300">LED-uri calde sau albastre cu efect neon cosmic. Iluminare magică care dă viață constelațiilor noastre</p>
+              <h3 className="text-xl font-bold text-white mb-3">Design Premium</h3>
+              <p className="text-gray-300">Constelații detaliate și design elegant. Perfectă pentru a prinde frumusețea unui moment special sub cer</p>
             </div>
           </div>
         </div>
@@ -469,8 +556,8 @@ export default function NordaStarMaps() {
     if (!product) return null;
 
     return (
-      <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4" onClick={onClose}>
-        <div className="relative max-w-5xl w-full max-h-[90vh] flex flex-col md:flex-row items-stretch gap-6 bg-gray-800/50 backdrop-blur rounded-2xl border border-gray-700 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 overflow-y-auto" onClick={onClose}>
+        <div className="relative w-full max-w-5xl my-auto bg-gray-800/50 backdrop-blur rounded-2xl border border-gray-700 overflow-hidden flex flex-col md:flex-row items-stretch gap-0" onClick={(e) => e.stopPropagation()}>
           
           {/* Buton X - sus dreapta */}
           <button
@@ -482,32 +569,32 @@ export default function NordaStarMaps() {
           </button>
 
           {/* Imagine */}
-          <div className="w-full md:w-1/2 flex items-center justify-center bg-gray-900 p-4">
+          <div className="w-full md:w-1/2 flex items-center justify-center bg-gray-900 p-4 md:p-6">
             <img 
               src={product.image} 
               alt={product.name} 
-              className="w-full h-full object-contain rounded-lg"
+              className="w-full h-full max-h-96 md:max-h-none object-contain rounded-lg"
             />
           </div>
 
-          {/* Detalii */}
-          <div className="w-full md:w-1/2 flex flex-col p-6 md:p-8">
-            <h2 className="text-3xl font-bold text-white mb-4 pr-10">{product.name}</h2>
+          {/* Detalii - cu scroll independent */}
+          <div className="w-full md:w-1/2 flex flex-col p-6 md:p-8 max-h-96 md:max-h-none overflow-y-auto scrollable-text">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 pr-10 flex-shrink-0">{product.name}</h2>
             
-            <div className="scrollable-text flex-grow mb-6 max-h-60">
+            <div className="flex-grow overflow-y-auto mb-6">
               <p className="text-gray-300 mb-4">{product.description}</p>
               <p className="text-gray-400 text-sm">{product.details}</p>
             </div>
 
-            <div className="flex items-center justify-between border-t border-gray-600 pt-4">
-              <span className="text-3xl font-bold text-yellow-400">{product.price} MDL</span>
+            <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-600 pt-4 gap-3 flex-shrink-0">
+              <span className="text-2xl md:text-3xl font-bold text-yellow-400">{product.price} MDL</span>
               <button 
                 onClick={() => {
                   setCustomOrder(prev => ({...prev, productName: product.name}));
                   setCurrentPage('order');
                   onClose();
                 }}
-                className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-6 py-3 rounded-full font-bold transition"
+                className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-300 text-gray-900 px-6 py-3 rounded-full font-bold transition"
               >
                 Comanda
               </button>
@@ -811,10 +898,13 @@ export default function NordaStarMaps() {
                             <p><span className="font-semibold text-white">Email:</span> {order.contact.email}</p>
                             <p><span className="font-semibold text-white">Telefon:</span> {order.contact.phone}</p>
                             <p><span className="font-semibold text-white">Produs:</span> {order.order.productName}</p>
+                            <p><span className="font-semibold text-white">Format:</span> <span className="bg-yellow-400/20 text-yellow-400 px-2 py-1 rounded">{order.order.format || 'A3'}</span></p>
+                            <p><span className="font-semibold text-white">Preț:</span> {order.finalPrice} MDL</p>
                             {/* Design hidden until feature is enabled */}
                             <p><span className="font-semibold text-white">Data Evenimentului:</span> {order.order.date}</p>
                             <p><span className="font-semibold text-white">Data Finisării:</span> {order.order.completionDate}</p>
-                            <p><span className="font-semibold text-white">Locație:</span> {order.order.location}</p>
+                            <p><span className="font-semibold text-white">Locație 1:</span> {order.order.location}</p>
+                            {order.order.hasSecondLocation && <p><span className="font-semibold text-white">Locație 2:</span> {order.order.location2}</p>}
                           </div>
                         </div>
                         <div className="bg-gray-900/50 p-4 rounded-lg">
