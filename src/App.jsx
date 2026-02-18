@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Star, Moon, Sparkles, Mail, Phone, MapPin, Instagram, Plus, Trash2, Edit2, Save, X, Calendar, Clock, Type, Palette } from 'lucide-react';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, getIdTokenResult } from 'firebase/auth';
 import emailjs from '@emailjs/browser';
 
 // Inițializez EmailJS (înlocuiește YOUR_SERVICE_ID cu valoarea ta)
@@ -153,6 +154,7 @@ export default function NordaStarMaps() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [editingProduct, setEditingProduct] = useState(null);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
@@ -280,13 +282,44 @@ export default function NordaStarMaps() {
     }
   };
 
-  const handleAdminLogin = () => {
-    if (adminPassword === 'norda2024') {
-      setIsAdmin(true);
-      setShowAdminLogin(false);
-      setCurrentPage('admin');
-    } else {
-      alert('Parolă incorectă!');
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+      try {
+        const idTokenResult = await getIdTokenResult(user, /* forceRefresh */ false);
+        const adminClaim = idTokenResult.claims && idTokenResult.claims.admin;
+        setIsAdmin(!!adminClaim);
+      } catch (err) {
+        console.error('Error checking token claims', err);
+        setIsAdmin(false);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  const handleAdminLogin = async () => {
+    if (!adminEmail || !adminPassword) {
+      alert('Completează email și parola!');
+      return;
+    }
+    try {
+      const credential = await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
+      const user = credential.user;
+      const idTokenResult = await getIdTokenResult(user);
+      if (idTokenResult.claims && idTokenResult.claims.admin) {
+        setIsAdmin(true);
+        setShowAdminLogin(false);
+        setCurrentPage('admin');
+      } else {
+        alert('Contul nu are permisiuni de admin.');
+        await signOut(auth);
+      }
+    } catch (error) {
+      console.error('Login error', error);
+      alert('Eroare la autentificare: verifică email/parola.');
     }
   };
 
@@ -615,7 +648,7 @@ export default function NordaStarMaps() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-4xl font-bold text-white">Panou Admin</h2>
-            <button onClick={() => {setIsAdmin(false); setCurrentPage('home');}} className="text-red-400 hover:text-red-300 transition">Deconectare</button>
+            <button onClick={async () => { try { await signOut(auth); setIsAdmin(false); setCurrentPage('home'); } catch(err) { console.error('Logout error', err); setIsAdmin(false); setCurrentPage('home'); } }} className="text-red-400 hover:text-red-300 transition">Deconectare</button>
           </div>
           <div className="bg-gray-800/50 backdrop-blur p-8 rounded-2xl border border-gray-700 mb-8">
             <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2"><Plus className="text-yellow-400" size={28} /> Adaugă Produs Nou</h3>
@@ -817,15 +850,29 @@ export default function NordaStarMaps() {
         )}
       </main>
 
-      {showAdminLogin && !isAdmin && (
+      {showAdminLogin && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 p-8 rounded-2xl border border-gray-700 max-w-md w-full">
-            <h3 className="text-2xl font-bold text-white mb-6">Login Admin</h3>
-            <input type="password" placeholder="Introdu parola" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 outline-none mb-4 focus:border-yellow-400"/>
-            <div className="flex gap-3">
-              <button onClick={handleAdminLogin} className="flex-1 bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold hover:bg-yellow-300 transition">Login</button>
-              <button onClick={() => {setShowAdminLogin(false); setAdminPassword('');}} className="flex-1 bg-gray-600 text-white py-3 rounded-lg font-bold hover:bg-gray-500 transition">Anulează</button>
-            </div>
+            {!isAdmin ? (
+              <>
+                <h3 className="text-2xl font-bold text-white mb-6">Login Admin</h3>
+                <input type="email" placeholder="Email admin" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 outline-none mb-3 focus:border-yellow-400" />
+                <input type="password" placeholder="Introdu parola" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 outline-none mb-4 focus:border-yellow-400"/>
+                <div className="flex gap-3">
+                  <button onClick={handleAdminLogin} className="flex-1 bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold hover:bg-yellow-300 transition">Login</button>
+                  <button onClick={() => {setShowAdminLogin(false); setAdminPassword(''); setAdminEmail('');}} className="flex-1 bg-gray-600 text-white py-3 rounded-lg font-bold hover:bg-gray-500 transition">Anulează</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-2xl font-bold text-white mb-4">Ești autentificat ca admin</h3>
+                <p className="text-gray-300 mb-6">Ai deja acces de administrator. Poți deschide panoul admin sau te poți deconecta.</p>
+                <div className="flex gap-3">
+                  <button onClick={() => { setShowAdminLogin(false); setCurrentPage('admin'); }} className="flex-1 bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold hover:bg-yellow-300 transition">Deschide Panou</button>
+                  <button onClick={async () => { try { await signOut(auth); setIsAdmin(false); setShowAdminLogin(false); setCurrentPage('home'); } catch(err) { console.error('Logout error', err); } }} className="flex-1 bg-gray-600 text-white py-3 rounded-lg font-bold hover:bg-gray-500 transition">Deconectează</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -6,7 +6,7 @@ yarn-error.log*
 
 # production
 dist/
-
+.json
 # local env files
 .env
 .env.*.local
