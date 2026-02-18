@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmare Comandă - Norda Star Maps</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 32px 24px;
+            text-align: center;
+            border-bottom: 3px solid #fbbf24;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        
+        .tagline {
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 300;
+        }
+        
+        .content {
+            padding: 32px 24px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 24px;
+        }
+        
+        .greeting .accent {
+            color: #fbbf24;
+        }
+        
+        .section {
+            margin-bottom: 32px;
+        }
+        
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .info-item {
+            background-color: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #fbbf24;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .info-value {
+            font-size: 15px;
+            color: #1e293b;
+            font-weight: 500;
+        }
+        
+        .info-item.full {
+            grid-column: 1 / -1;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 100%);
+            border: 1px solid #e0e7ff;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        
+        .highlight-box.order-number {
+            background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);
+            border: 2px solid #fbbf24;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .order-number-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #92400e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .order-number-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #fbbf24;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+        
+        .message-box {
+            background-color: #f1f5f9;
+            border-left: 4px solid #fbbf24;
+            padding: 16px;
+            border-radius: 6px;
+            font-style: italic;
+            color: #475569;
+            margin: 16px 0;
+        }
+        
+        .message-box.empty {
+            color: #94a3b8;
+        }
+        
+        .timeline {
+            position: relative;
+            padding: 0;
+        }
+        
+        .timeline-item {
+            display: flex;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 32px;
+            width: 2px;
+            height: 24px;
+            background-color: #e2e8f0;
+        }
+        
+        .timeline-dot {
+            width: 24px;
+            height: 24px;
+            background-color: #fbbf24;
+            border-radius: 50%;
+            margin-right: 16px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #78350f;
+        }
+        
+        .timeline-content {
+            flex-grow: 1;
+            padding-top: 2px;
+        }
+        
+        .timeline-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .timeline-value {
+            font-size: 15px;
+            color: #1e293b;
+            font-weight: 500;
+        }
+        
+        .price-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .price-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #92400e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .price-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+        
+        .footer {
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .footer-text {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+        
+        .footer-link {
+            color: #fbbf24;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: #e2e8f0;
+            margin: 20px 0;
+        }
+        
+        .button {
+            display: inline-block;
+            background-color: #fbbf24;
+            color: #1e293b;
+            padding: 12px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            margin-top: 16px;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .button:hover {
+            background-color: #f59e0b;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 0;
+            }
+            
+            .content {
+                padding: 20px 16px;
+            }
+            
+            .header {
+                padding: 24px 16px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .info-item.full {
+                grid-column: 1;
+            }
+            
+            .logo {
+                font-size: 24px;
+            }
+            
+            .order-number-value {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">★ NORDA ★</div>
+            <div class="tagline">Star Maps</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Greeting -->
+            <div class="greeting">
+                Mulțumim, <span class="accent">{{customer_name}}</span>! 🌟
+            </div>
+            
+            <p style="color: #475569; margin-bottom: 24px; font-size: 15px;">
+                Comanda ta a fost primită cu succes. Te vom contacta în curând pentru confirmarea finală și detalii de livrare. Iată datele comenzii tale:
+            </p>
+
+            <!-- Order Number - Highlight -->
+            <div class="highlight-box order-number">
+                <div class="order-number-label">Numărul Comenzii</div>
+                <div class="order-number-value">#{{order_number}}</div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="section">
+                <div class="section-title">📋 Date de Contact</div>
+                <div class="info-grid">
+                    <div class="info-item full">
+                        <div class="info-label">Nume</div>
+                        <div class="info-value">{{customer_name}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{to_email}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Telefon</div>
+                        <div class="info-value">{{customer_phone}}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Information -->
+            <div class="section">
+                <div class="section-title">🎁 Detalii Produs</div>
+                <div class="info-grid">
+                    <div class="info-item full">
+                        <div class="info-label">Produs Selectat</div>
+                        <div class="info-value">{{product_name}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Design</div>
+                        <div class="info-value">{{design}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Preț</div>
+                        <div class="info-value">{{product_price}}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event & Completion Timeline -->
+            <div class="section">
+                <div class="section-title">📅 Planificare Eveniment</div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot">📍</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Data Evenimentului</div>
+                            <div class="timeline-value">{{event_date}}</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot">🕐</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Ora Evenimentului</div>
+                            <div class="timeline-value">{{event_time}}</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot">📌</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Locația</div>
+                            <div class="timeline-value">{{location}}</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot">✓</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Data Finalizării</div>
+                            <div class="timeline-value">{{completion_date}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Section -->
+            <div class="section">
+                <div class="section-title">💬 Mesajul Tău</div>
+                <div class="message-box {{#if message}}{{else}}empty{{/if}}">
+                    {{#if message}}
+                        {{message}}
+                    {{else}}
+                        <em>Niciun mesaj adăugat</em>
+                    {{/if}}
+                </div>
+            </div>
+
+            <!-- Client Notes -->
+            {{#if client_notes}}
+            <div class="section">
+                <div class="section-title">📝 Cerințe/Comentarii Suplimentare</div>
+                <div class="message-box">
+                    {{client_notes}}
+                </div>
+            </div>
+            {{/if}}
+
+            <!-- Price Highlight -->
+            <div class="price-section">
+                <div class="price-label">Preț Total</div>
+                <div class="price-value">{{product_price}}</div>
+            </div>
+
+            <!-- Call to Action -->
+            <div style="text-align: center; margin: 32px 0;">
+                <p style="color: #475569; font-size: 14px; margin-bottom: 16px;">
+                    Dacă ai întrebări sau vrei să modifici comanda, nu ezita să ne contactezi.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-text">
+                <strong>Norda Star Maps</strong> | Hărți Stelare Personalizate
+            </div>
+            <div class="footer-text" style="font-size: 12px; color: #94a3b8;">
+                © 2026 Norda Star Maps. Toate drepturile rezervate.
+            </div>
+            <div style="margin-top: 16px;">
+                <a href="mailto:contact@norda.md" class="footer-link" style="margin-right: 16px;">Contact</a>
+                <a href="#" class="footer-link">Website</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

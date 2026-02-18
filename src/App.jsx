@@ -81,6 +81,11 @@ function CustomOrderPage({ products, customOrder, setCustomOrder, contactInfo, s
                   <option>Minimalist Alb</option>
                 </select>
               </div>
+
+              <div>
+                <label className="text-white font-semibold mb-2 flex items-center gap-2"><Type size={18} className="text-yellow-400"/> Cerințe/Comentarii Suplimentare (Opțional)</label>
+                <textarea placeholder="Ex: Vreau culori mai calde, sau alte detalii speciale..." value={customOrder.clientNotes} onChange={(e) => setCustomOrder(prev => ({...prev, clientNotes: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none h-20 mobile-textarea"/>
+              </div>
             </div>
 
             <h3 className="text-2xl font-bold text-white mb-6 mt-10">2. Date de Contact</h3>
@@ -146,6 +151,7 @@ function CustomOrderPage({ products, customOrder, setCustomOrder, contactInfo, s
 export default function NordaStarMaps() {
   const [currentPage, setCurrentPage] = useState('home');
   const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [editingProduct, setEditingProduct] = useState(null);
@@ -154,6 +160,7 @@ export default function NordaStarMaps() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [activeOrdersTab, setActiveOrdersTab] = useState('active');
 
   // Starea pentru comanda personalizată
   const [customOrder, setCustomOrder] = useState({
@@ -164,6 +171,7 @@ export default function NordaStarMaps() {
     location: '',
     message: '',
     completionDate: '',
+    clientNotes: '',
   });
 
   // Date de contact pentru comanda personalizată (lifted state)
@@ -197,6 +205,7 @@ export default function NordaStarMaps() {
   // Încarcă produsele din Firestore
   useEffect(() => {
     loadProducts();
+    loadOrders();
   }, []);
 
   const loadProducts = async () => {
@@ -234,6 +243,42 @@ export default function NordaStarMaps() {
     }
   };
 
+  const loadOrders = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "orders"));
+      const ordersData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setOrders(ordersData);
+    } catch (error) {
+      console.error("Eroare la încărcarea comenzilor:", error);
+    }
+  };
+
+  const toggleOrderStatus = async (orderId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === 'active' ? 'completed' : 'active';
+      const orderRef = doc(db, "orders", orderId);
+      await updateDoc(orderRef, { status: newStatus });
+      await loadOrders();
+    } catch (error) {
+      console.error("Eroare la actualizarea statusului comenzii:", error);
+    }
+  };
+
+  const deleteOrder = async (orderId) => {
+    if (confirm('Sigur vrei să ștergi această comandă?')) {
+      try {
+        await deleteDoc(doc(db, "orders", orderId));
+        await loadOrders();
+        alert('Comandă ștearsă cu succes!');
+      } catch (error) {
+        console.error("Eroare la ștergerea comenzii:", error);
+      }
+    }
+  };
+
   const handleAdminLogin = () => {
     if (adminPassword === 'norda2024') {
       setIsAdmin(true);
@@ -268,10 +313,14 @@ export default function NordaStarMaps() {
     try {
       setSubmitting(true);
 
+      // Genereaza numar de comanda simplu (timestamp-based)
+      const orderNumber = Math.floor(Date.now() / 1000) % 1000000;
+
       const orderRef = await addDoc(collection(db, "orders"), {
         contact: contactInfo,
         order: customOrder,
-        status: 'pending',
+        orderNumber: orderNumber,
+        status: 'active',
         createdAt: serverTimestamp()
       });
 
@@ -287,12 +336,14 @@ export default function NordaStarMaps() {
         location: customOrder.location,
         message: customOrder.message || 'Fără mesaj',
         completion_date: customOrder.completionDate || 'Nespecificat',
+        client_notes: customOrder.clientNotes || 'Fără comentarii',
         product_price: selectedProduct?.price ? `${selectedProduct.price} MDL` : 'Preț la cerere',
+        order_number: orderNumber,
         order_id: orderRef.id
       });
 
       alert('Mulțumim pentru comandă! Confirmarea a fost trimisă pe emailul tău. Vă vom contacta în curând!');
-      setCustomOrder({ productName: 'Hartă Stelară Clasică', design: 'Noapte înstelată', date: '', time: '', location: '', message: '', completionDate: '' });
+      setCustomOrder({ productName: 'Hartă Stelară Clasică', design: 'Noapte înstelată', date: '', time: '', location: '', message: '', completionDate: '', clientNotes: '' });
       setContactInfo({ name: '', email: '', phone: '' });
     } catch (error) {
       console.error("Eroare la salvarea comenzii sau trimiterea emailului:", error);
@@ -687,7 +738,76 @@ export default function NordaStarMaps() {
             handleSubmit={handleSubmit}
           />
         )}
-        {currentPage === 'admin' && isAdmin && <AdminPage />}
+        {currentPage === 'admin' && isAdmin && (
+          <div className="min-h-screen bg-gradient-to-b from-gray-900 to-blue-900 pt-32 pb-20">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-4xl font-bold text-white">Panou Admin</h2>
+                <div className="flex gap-4">
+                  <button onClick={() => setCurrentPage('admin-orders')} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">Comenzi</button>
+                  <button onClick={() => {setIsAdmin(false); setCurrentPage('home');}} className="text-red-400 hover:text-red-300 transition">Deconectare</button>
+                </div>
+              </div>
+              <AdminPage />
+            </div>
+          </div>
+        )}
+        {currentPage === 'admin-orders' && isAdmin && (
+          <div className="min-h-screen bg-gradient-to-b from-gray-900 to-blue-900 pt-32 pb-20">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-4xl font-bold text-white">Comenzi</h2>
+                <div className="flex gap-4">
+                  <button onClick={() => setCurrentPage('admin')} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">Produse</button>
+                  <button onClick={() => {setIsAdmin(false); setCurrentPage('home');}} className="text-red-400 hover:text-red-300 transition">Deconectare</button>
+                </div>
+              </div>
+              
+              <div className="flex gap-4 mb-8">
+                <button onClick={() => setActiveOrdersTab('active')} className={`px-6 py-2 rounded-lg font-bold transition ${activeOrdersTab === 'active' ? 'bg-yellow-400 text-gray-900' : 'bg-gray-700 text-white hover:bg-gray-600'}`}>Comenzi Active ({orders.filter(o => o.status === 'active').length})</button>
+                <button onClick={() => setActiveOrdersTab('completed')} className={`px-6 py-2 rounded-lg font-bold transition ${activeOrdersTab === 'completed' ? 'bg-yellow-400 text-gray-900' : 'bg-gray-700 text-white hover:bg-gray-600'}`}>Arhivă ({orders.filter(o => o.status === 'completed').length})</button>
+              </div>
+
+              <div className="space-y-4">
+                {orders.filter(o => o.status === activeOrdersTab).length === 0 ? (
+                  <div className="text-center text-gray-400 py-10">Nicio comandă în această secțiune</div>
+                ) : (
+                  orders.filter(o => o.status === activeOrdersTab).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)).map(order => (
+                    <div key={order.id} className="bg-gray-800/50 backdrop-blur p-6 rounded-2xl border border-gray-700 hover:border-yellow-400 transition">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <h3 className="text-2xl font-bold text-yellow-400 mb-4">#Comandă {order.orderNumber}</h3>
+                          <div className="space-y-2 text-gray-300">
+                            <p><span className="font-semibold text-white">Client:</span> {order.contact.name}</p>
+                            <p><span className="font-semibold text-white">Email:</span> {order.contact.email}</p>
+                            <p><span className="font-semibold text-white">Telefon:</span> {order.contact.phone}</p>
+                            <p><span className="font-semibold text-white">Produs:</span> {order.order.productName}</p>
+                            <p><span className="font-semibold text-white">Design:</span> {order.order.design}</p>
+                            <p><span className="font-semibold text-white">Data Evenimentului:</span> {order.order.date}</p>
+                            <p><span className="font-semibold text-white">Data Finisării:</span> {order.order.completionDate}</p>
+                            <p><span className="font-semibold text-white">Locație:</span> {order.order.location}</p>
+                          </div>
+                        </div>
+                        <div className="bg-gray-900/50 p-4 rounded-lg">
+                          <p className="text-gray-400 text-sm mb-2"><span className="font-semibold text-white">Mesaj Personalizat:</span></p>
+                          <p className="text-gray-300 mb-4 min-h-8">{order.order.message || 'Fără mesaj'}</p>
+                          <p className="text-gray-400 text-sm mb-2"><span className="font-semibold text-white">Comentarii Speciale:</span></p>
+                          <p className="text-gray-300 mb-4 min-h-8">{order.order.clientNotes || 'Fără comentarii'}</p>
+                          <div className="flex gap-2 mt-6">
+                            <button onClick={() => toggleOrderStatus(order.id, order.status)} className={`flex-1 py-2 rounded text-sm font-bold transition ${activeOrdersTab === 'active' ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}>
+                              {activeOrdersTab === 'active' ? 'Marchează ca Realizată' : 'Reactivează'}
+                            </button>
+                            <button onClick={() => deleteOrder(order.id)} className="flex-1 bg-red-500 text-white py-2 rounded text-sm font-bold hover:bg-red-600 transition">Șterge</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {showAdminLogin && !isAdmin && (
