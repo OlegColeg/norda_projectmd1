@@ -14,6 +14,18 @@ img, svg {
   height: auto;
 }
 
+/* Mobile-friendly form controls */
+.mobile-input, .mobile-textarea, select {
+  font-size: 16px;
+  padding: 0.6rem 0.9rem;
+}
+
+/* Improve font rendering on mobile */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* Scroll elegant mic pentru text container */
 .scrollable-text {
   overflow-y: auto;
