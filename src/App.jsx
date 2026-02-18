@@ -250,6 +250,21 @@ export default function NordaStarMaps() {
       return;
     }
 
+    // Validare: data finisării trebuie să fie cel puțin +3 zile de azi
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const minCompletionDate = new Date(today);
+    minCompletionDate.setDate(minCompletionDate.getDate() + 3);
+    
+    const selectedCompletionDate = new Date(customOrder.completionDate);
+    selectedCompletionDate.setHours(0, 0, 0, 0);
+
+    if (selectedCompletionDate < minCompletionDate) {
+      const minDateFormatted = minCompletionDate.toLocaleDateString('ro-RO');
+      alert(`Data finiș trebuie să fie cel puțin +3 zile de azi. Data minimă: ${minDateFormatted}`);
+      return;
+    }
+
     try {
       setSubmitting(true);
 
