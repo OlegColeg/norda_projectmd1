@@ -773,9 +773,14 @@ export default function NordaStarMaps() {
                 {orders.filter(o => o.status === activeOrdersTab).length === 0 ? (
                   <div className="text-center text-gray-400 py-10">Nicio comandă în această secțiune</div>
                 ) : (
-                  orders.filter(o => o.status === activeOrdersTab).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)).map(order => (
+                  orders.filter(o => o.status === activeOrdersTab).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)).map(order => {
+                    const product = products.find(p => p.name === order.order.productName);
+                    return (
                     <div key={order.id} className="bg-gray-800/50 backdrop-blur p-6 rounded-2xl border border-gray-700 hover:border-yellow-400 transition">
-                      <div className="grid md:grid-cols-2 gap-6">
+                      <div className="grid md:grid-cols-3 gap-6">
+                        <div className="flex items-center justify-center bg-gray-900 rounded-lg overflow-hidden">
+                          <img src={product?.image || 'https://via.placeholder.com/800x800?text=Produs'} alt={order.order.productName} className="w-full h-full object-cover aspect-square" />
+                        </div>
                         <div>
                           <h3 className="text-2xl font-bold text-yellow-400 mb-4">#Comandă {order.orderNumber}</h3>
                           <div className="space-y-2 text-gray-300">
@@ -803,7 +808,8 @@ export default function NordaStarMaps() {
                         </div>
                       </div>
                     </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
