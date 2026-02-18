@@ -250,6 +250,7 @@ export default function NordaStarMaps() {
         id: doc.id,
         ...doc.data()
       }));
+      console.log('Comenzi încărcate:', ordersData.length, ordersData);
       setOrders(ordersData);
     } catch (error) {
       console.error("Eroare la încărcarea comenzilor:", error);
