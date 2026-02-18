@@ -74,14 +74,7 @@ function CustomOrderPage({ products, customOrder, setCustomOrder, contactInfo, s
                 <textarea placeholder="Ex: Sub acest cer ne-am întâlnit..." value={customOrder.message} onFocus={() => console.log('message focused')} onChange={(e) => { setCustomOrder(prev => ({...prev, message: e.target.value})); console.log('message change', e.target.value); }} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none h-24 mobile-textarea"/>
               </div>
 
-              <div>
-                <label className="text-white font-semibold mb-2 flex items-center gap-2"><Palette size={18} className="text-yellow-400"/> Alege Designul</label>
-                <select value={customOrder.design} onChange={(e) => setCustomOrder(prev => ({...prev, design: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none">
-                  <option>Noapte înstelată</option>
-                  <option>Albastru Cosmic</option>
-                  <option>Minimalist Alb</option>
-                </select>
-              </div>
+              {/* Design selection removed until feature is available */}
 
               <div>
                 <label className="text-white font-semibold mb-2 flex items-center gap-2"><Type size={18} className="text-yellow-400"/> Cerințe/Comentarii Suplimentare (Opțional)</label>
@@ -109,10 +102,7 @@ function CustomOrderPage({ products, customOrder, setCustomOrder, contactInfo, s
                   <span className="font-semibold text-white">Model:</span>
                   <span>{customOrder.productName}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-white">Design:</span>
-                  <span>{customOrder.design}</span>
-                </div>
+                {/* Design hidden until feature is enabled */}
                 <hr className="border-gray-600"/>
                 <div className="flex justify-between items-center">
                   <span className="font-semibold text-white">Data Evenimentului:</span>
@@ -821,7 +811,7 @@ export default function NordaStarMaps() {
                             <p><span className="font-semibold text-white">Email:</span> {order.contact.email}</p>
                             <p><span className="font-semibold text-white">Telefon:</span> {order.contact.phone}</p>
                             <p><span className="font-semibold text-white">Produs:</span> {order.order.productName}</p>
-                            <p><span className="font-semibold text-white">Design:</span> {order.order.design}</p>
+                            {/* Design hidden until feature is enabled */}
                             <p><span className="font-semibold text-white">Data Evenimentului:</span> {order.order.date}</p>
                             <p><span className="font-semibold text-white">Data Finisării:</span> {order.order.completionDate}</p>
                             <p><span className="font-semibold text-white">Locație:</span> {order.order.location}</p>
