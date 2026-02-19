@@ -11,6 +11,7 @@ emailjs.init('6B2jTwTuges4knKMw');
 // Componentă stabilă pentru pagina de comandă (definită la nivel top-level pentru a evita remounturi)
 function CustomOrderPage({ products, customOrder, setCustomOrder, contactInfo, setContactInfo, submitting, handleSubmit }) {
   const renderCount = useRef(0);
+  const [nameError, setNameError] = useState('');
 
   useEffect(() => {
     renderCount.current += 1;
@@ -19,6 +20,7 @@ function CustomOrderPage({ products, customOrder, setCustomOrder, contactInfo, s
 
   useEffect(() => {
     console.log('CustomOrderPage mounted');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     return () => console.log('CustomOrderPage unmounted');
   }, []);
 
@@ -135,7 +137,25 @@ function CustomOrderPage({ products, customOrder, setCustomOrder, contactInfo, s
 
             <h3 className="text-xl md:text-2xl font-bold text-white mb-6 mt-10">2. Date de Contact</h3>
             <div className="space-y-4">
-              <input required type="text" placeholder="Numele tău *" value={contactInfo.name} onChange={(e) => setContactInfo(prev => ({...prev, name: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input text-sm md:text-base" autoComplete="name"/>
+              <input
+                required
+                type="text"
+                placeholder="Numele tău *"
+                value={contactInfo.name}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setContactInfo(prev => ({...prev, name: v}));
+                  // validate presence of at least one letter
+                  if (v && !/[A-Za-zĂÂÎȘȚăâîșț]/.test(v)) {
+                    setNameError('Numele trebuie să conțină cel puțin o literă');
+                  } else {
+                    setNameError('');
+                  }
+                }}
+                className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input text-sm md:text-base"
+                autoComplete="name"
+              />
+              {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
               <input required type="email" placeholder="Email *" value={contactInfo.email} onChange={(e) => setContactInfo(prev => ({...prev, email: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input text-sm md:text-base" autoComplete="email"/>
               <input required type="tel" placeholder="Telefon (WhatsApp) *" value={contactInfo.phone} onChange={(e) => setContactInfo(prev => ({...prev, phone: e.target.value}))} className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-yellow-400 outline-none mobile-input text-sm md:text-base" autoComplete="tel" inputMode="tel"/>
             </div>
@@ -384,7 +404,13 @@ export default function NordaStarMaps() {
   };
 
   const handleSubmit = async () => {
-    if (!contactInfo.name || !contactInfo.email || !contactInfo.phone || !customOrder.date || !customOrder.location || !customOrder.completionDate) {
+    // check name validity
+    if (!contactInfo.name || !/[A-Za-zĂÂÎȘȚăâîșț]/.test(contactInfo.name)) {
+      alert('Te rog introdu un nume valid care să conțină cel puțin o literă.');
+      return;
+    }
+
+    if (!contactInfo.email || !contactInfo.phone || !customOrder.date || !customOrder.location || !customOrder.completionDate) {
       alert('Te rog completează toate câmpurile obligatorii (*)!');
       return;
     }
