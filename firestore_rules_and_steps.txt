@@ -1,0 +1,57 @@
+Reguli Firestore (corectate) si pasi de deploy
+
+1) Reguli recomandate (înlocuiți regulile curente cu cele de mai jos):
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
+
+2) Explicații scurte:
+- Produsele: toată lumea poate citi; doar adminii pot adăuga/modifica/șterge.
+- Comenzile: oricine poate crea o comandă; doar adminii pot citi/gestiona comenzile.
+
+3) Dacă nu folosiți custom claims (sau nu aveți setup pentru ele):
+- În loc de `isAdmin()` folosiți `request.auth.uid == "ADMIN_UID"` și înlocuiți `ADMIN_UID` cu UID-ul contului admin.
+
+4) Setare `admin` custom claim (exemplu Node.js, rulat pe server de încredere):
+
+const admin = require('firebase-admin');
+admin.initializeApp({ /* credential/serviceAccount */ });
+admin.auth().setCustomUserClaims('ADMIN_UID', { admin: true })
+  .then(() => console.log('Admin claim set'))
+  .catch(err => console.error(err));
+
+5) Deploy reguli Firestore (folosiți Firebase CLI din proiectul local):
+
+firebase login
+firebase use --add   # selectați proiectul
+firebase deploy --only firestore:rules
+
+6) Verificare locală / în aplicație:
+- Conectați-vă cu contul admin (cel cu claim `admin` sau UID-ul setat).
+- Din panoul admin testați: adăugare produs, editare produs, ștergere produs.
+- Verificați pagina de comenzi: adminul trebuie să vadă comenzile plasate.
+
+7) Probleme frecvente:
+- Dacă adminul nu poate scrie, verificați că tokenul s-a reîmprospătat (deconectare/reconectare) după setarea claim-ului.
+- Dacă comenzile nu apar în pagina admin, asigurați-vă că interogarea Firestore are permisiunea `read` pentru `orders` (regulile de mai sus permit doar adminilor).
+
+Dacă vrei, pot:
+- Adăuga acest fișier `firestore_rules_and_steps.txt` (am făcut-o deja),
+- Rula comenzi de deploy pentru tine (dacă îmi spui că ai setat Firebase CLI și vrei să continui),
+- Sau să-ți pregătesc un script mic pentru setarea claim-ului.

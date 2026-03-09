@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-gray-900 text-white;
+}
+img, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Mobile-friendly form controls */
+.mobile-input, .mobile-textarea, select {
+  font-size: 16px;
+  padding: 0.6rem 0.9rem;
+}
+
+/* Improve font rendering on mobile */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scroll elegant mic pentru text container */
+.scrollable-text {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #fbbf24 #1f2937;
+}
+
+.scrollable-text::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-text::-webkit-scrollbar-track {
+  background: #1f2937;
+  border-radius: 10px;
+}
+
+.scrollable-text::-webkit-scrollbar-thumb {
+  background: #fbbf24;
+  border-radius: 10px;
+}
+
+.scrollable-text::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}
